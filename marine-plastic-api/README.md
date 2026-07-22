@@ -115,7 +115,7 @@ kubectl get pods -l app=marine-plastic-api -o wide
 | 4 | u=8 | u=10 (24% fail) | 18,100ms |
 | 8 | u=15 | u=16+ (13% fail) | 17,500ms |
 
-See `devesh_gurusinghe_.pdf` for detailed analysis.
+See submission report for detailed benchmark analysis.
 
 ## Docker image
 
@@ -130,11 +130,8 @@ kubectl set image deployment/marine-plastic-api marine-plastic=dgur0007/marine-a
 kubectl rollout restart deployment/marine-plastic-api
 ```
 
-## Support
+## Author
 
-For benchmarking details, see: `devesh_gurusinghe_.pdf`
+**Devesh Gurusinghe** — Monash University
 
----
-**Assignment:** FIT5225 S1 2026 A1
-**Student ID:** 
-**Model:** YOLOv8m - Marine Plastic Pollution Detection
+**Model:** YOLOv8m — Marine Plastic Pollution Detection
