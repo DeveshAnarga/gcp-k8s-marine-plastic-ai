@@ -1,0 +1,65 @@
+# CloudEco: Marine Plastic Detection System
+# Author: Devesh Gurusinghe ()
+# Purpose: Kubernetes deployment configuration with resource limits, probes, scaling
+# Date: 2026-04-30
+
+# ============================================
+# DEPLOYMENT
+# ============================================
+# I define how my FastAPI+YOLO pods run: image, CPU/RAM, health checks, and replica count for benchmarks.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marine-plastic-api
+  namespace: default
+  labels:
+    app: marine-plastic-api
+    version: v1
+spec:
+  replicas: 1  # I scale to 1/2/4/8 with: kubectl scale deployment marine-plastic-api --replicas=N
+  selector:
+    matchLabels:
+      app: marine-plastic-api
+  template:
+    metadata:
+      labels:
+        app: marine-plastic-api
+        version: v1
+    spec:
+      containers:
+        - name: marine-plastic
+          # I pull this image from Docker Hub — tag jpeg-optimized has JPEG annotate + async API code.
+          image: dgur0007/marine-api:jpeg-optimized
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+
+          # ============================================
+          # RESOURCES
+          # ============================================
+          # I set requests so the scheduler knows how much each pod needs on my 8GB worker nodes.
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"  # I hit OOMKilled when I ran 4 uvicorn workers × many replicas — watch this.
+
+          # ============================================
+          # PROBES
+          # ============================================
+          # I point liveness at /health so Kubernetes restarts a stuck or crashed container.
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          # I use readiness so traffic only goes to pods that finished loading the YOLO model.
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10

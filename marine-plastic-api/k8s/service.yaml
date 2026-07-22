@@ -1,0 +1,27 @@
+# CloudEco: Marine Plastic Detection System
+# Author: Devesh Gurusinghe ()
+# Purpose: Kubernetes NodePort service for external API access
+# Date: 2026-04-30
+
+# ============================================
+# SERVICE
+# ============================================
+# I expose the deployment so I can call the API from outside the cluster (browser, curl, Locust).
+apiVersion: v1
+kind: Service
+metadata:
+  name: marine-plastic-api-service
+  namespace: default
+  labels:
+    app: marine-plastic-api
+    version: v1
+spec:
+  type: LoadBalancer
+  selector:
+    app: marine-plastic-api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
+      nodePort: 30080  # I use this in interviews: http://<master-public-ip>:30080

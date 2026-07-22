@@ -1,0 +1,201 @@
+# CloudEco: Marine Plastic Detection System
+# Author: Devesh Gurusinghe ()
+# Purpose: Ansible playbook for Kubernetes cluster initialization and node configuration
+# Date: 2026-04-30
+#
+# Run: ansible-playbook -i inventory.ini k8s-bootstrap.yml
+#
+# This play installs containerd + kubelet and OS prerequisites on every node; kubeadm init/join is separate.
+
+- name: Bootstrap Kubernetes nodes
+  hosts: all
+  become: yes
+  vars:
+    kubernetes_version: "1.29.15-1.1"
+    kubernetes_apt_keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    kubernetes_apt_repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
+
+  handlers:
+    # ============================================
+    # HANDLERS
+    # ============================================
+    # Runs after containerd config changes so new SystemdCgroup and CRI settings actually load.
+    - name: restart containerd
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted
+        daemon_reload: yes
+
+  tasks:
+    # ============================================
+    # BASE OS
+    # ============================================
+    # Patch Ubuntu and pull HTTPS/curl tooling so the Kubernetes APT repo can be added safely.
+    - name: Update apt cache and upgrade packages
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600
+
+    - name: Install common prerequisites
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gpg
+        state: present
+
+    # Docker.io skipped: conflicts with containerd packaging on some images; K8s uses containerd.
+
+    # ============================================
+    # KUBERNETES APT REPO
+    # ============================================
+    # Adds pkgs.k8s.io signing key + list entry so apt can install kubelet/kubeadm/kubectl for v1.29.
+    - name: Ensure apt keyrings directory exists
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Download Kubernetes repository key
+      ansible.builtin.get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+        dest: /tmp/kubernetes-release.key
+        mode: "0644"
+
+    - name: Convert Kubernetes key to keyring format
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o {{ kubernetes_apt_keyring }} /tmp/kubernetes-release.key
+      args:
+        creates: "{{ kubernetes_apt_keyring }}"
+
+    - name: Configure Kubernetes apt repository
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/kubernetes.list
+        content: "{{ kubernetes_apt_repo }}\n"
+        mode: "0644"
+
+    # ============================================
+    # KUBERNETES PACKAGES
+    # ============================================
+    # Pins exact patch version; apt hold stops unattended upgrades from skewing kubeadm/kubelet versions.
+    - name: Install Kubernetes packages
+      ansible.builtin.apt:
+        name:
+          - "kubelet={{ kubernetes_version }}"
+          - "kubeadm={{ kubernetes_version }}"
+          - "kubectl={{ kubernetes_version }}"
+        state: present
+        update_cache: yes
+
+    - name: Hold Kubernetes packages
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    # ============================================
+    # SWAP (REQUIRED BY KUBELET)
+    # ============================================
+    # Kubelet will not run with swap enabled; disable now and persist via fstab comment-out.
+    - name: Disable swap immediately
+      ansible.builtin.command:
+        cmd: swapoff -a
+
+    - name: Comment out swap entries in fstab
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#].*\sswap\s+.*)$'
+        replace: '# \1'
+
+    # ============================================
+    # KERNEL MODULES & SYSCTL
+    # ============================================
+    # overlay + br_netfilter and sysctl toggles are prerequisites for Linux bridges and pod networking (CNI).
+    - name: Load overlay module
+      community.general.modprobe:
+        name: overlay
+        state: present
+
+    - name: Load br_netfilter module
+      community.general.modprobe:
+        name: br_netfilter
+        state: present
+
+    - name: Persist overlay module
+      ansible.builtin.lineinfile:
+        path: /etc/modules-load.d/k8s.conf
+        line: overlay
+        create: yes
+        mode: "0644"
+
+    - name: Persist br_netfilter module
+      ansible.builtin.lineinfile:
+        path: /etc/modules-load.d/k8s.conf
+        line: br_netfilter
+        create: yes
+        mode: "0644"
+
+    - name: Set net.ipv4.ip_forward
+      ansible.builtin.sysctl:
+        name: net.ipv4.ip_forward
+        value: "1"
+        state: present
+        reload: yes
+
+    - name: Set net.bridge.bridge-nf-call-iptables
+      ansible.builtin.sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: "1"
+        state: present
+        reload: yes
+
+    # ============================================
+    # CONTAINERD
+    # ============================================
+    # Generates default containerd config then flips SystemdCgroup=true so kubelet’s cgroup driver matches.
+    - name: Ensure /etc/containerd exists
+      ansible.builtin.file:
+        path: /etc/containerd
+        state: directory
+        mode: "0755"
+
+    - name: Create default containerd config
+      ansible.builtin.command:
+        cmd: containerd config default
+      register: containerd_default
+      changed_when: false
+
+    - name: Write containerd config file
+      ansible.builtin.copy:
+        dest: /etc/containerd/config.toml
+        content: "{{ containerd_default.stdout }}"
+        mode: "0644"
+      notify: restart containerd
+
+    - name: Set containerd SystemdCgroup to true
+      ansible.builtin.replace:
+        path: /etc/containerd/config.toml
+        regexp: "SystemdCgroup = false"
+        replace: "SystemdCgroup = true"
+      notify: restart containerd
+
+    # ============================================
+    # SERVICES
+    # ============================================
+    # Ensures CRI and kubelet start on boot; kubeadm init/join is run manually after this playbook.
+    - name: Ensure containerd service is enabled and started
+      ansible.builtin.systemd:
+        name: containerd
+        enabled: yes
+        state: started
+
+    - name: Ensure kubelet service is enabled and started
+      ansible.builtin.systemd:
+        name: kubelet
+        enabled: yes
+        state: started
