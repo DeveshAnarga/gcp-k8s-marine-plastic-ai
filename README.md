@@ -14,7 +14,7 @@
 
 ---
 
-## Why this project matters (for recruiters)
+## Why this project matters 
 
 This project demonstrates **full-stack cloud engineering for ML inference**, not just a notebook model:
 
