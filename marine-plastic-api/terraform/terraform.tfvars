@@ -1,12 +1,11 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
-# Purpose: Terraform variable values for student's GCP project
-# Date: 2026-04-30
+# Author: Devesh Gurusinghe
+# Purpose: Terraform variable values for the GCP project
 #
-# This file overrides defaults in variables.tf for a concrete deploy. Keep terraform-key.json
-# out of submission; markers run terraform with their own project/key.
+# Override defaults in variables.tf for a concrete deploy.
+# Keep service-account keys out of the repo; use your own project/key locally.
 
-project_id   = "fit5225-marine-a1-"
+project_id   = "YOUR_GCP_PROJECT_ID"
 region       = "australia-southeast1"
 zone         = "australia-southeast1-b"
 machine_type = "e2-custom-4-8192"

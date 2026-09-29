@@ -1,6 +1,6 @@
 """
 CloudEco: Marine Plastic Detection System
-Author: Devesh Gurusinghe ()
+Author: Devesh Gurusinghe
 Purpose: Locust load testing script for benchmarking concurrent user performance
 Date: 2026-04-30
 """

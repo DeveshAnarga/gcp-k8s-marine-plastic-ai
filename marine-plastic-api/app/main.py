@@ -1,6 +1,6 @@
 """
 CloudEco: Marine Plastic Detection System
-Author: Devesh Gurusinghe ()
+Author: Devesh Gurusinghe
 Purpose: FastAPI application with async predict/annotate endpoints for YOLO inference
 Date: 2026-04-30
 """

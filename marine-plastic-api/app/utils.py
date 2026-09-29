@@ -1,6 +1,6 @@
 """
 CloudEco: Marine Plastic Detection System
-Author: Devesh Gurusinghe ()
+Author: Devesh Gurusinghe
 Purpose: Image encoding/decoding utilities (base64, JPEG optimization)
 Date: 2026-04-30
 """

@@ -1,5 +1,5 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
+# Author: Devesh Gurusinghe
 # Purpose: GCP VM instances for Kubernetes master and worker nodes
 # Date: 2026-04-30
 

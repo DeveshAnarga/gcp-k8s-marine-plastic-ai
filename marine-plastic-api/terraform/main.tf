@@ -1,5 +1,5 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
+# Author: Devesh Gurusinghe
 # Purpose: Terraform GCP provider configuration for infrastructure
 # Date: 2026-04-30
 

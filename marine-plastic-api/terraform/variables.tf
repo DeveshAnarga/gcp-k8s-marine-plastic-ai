@@ -1,5 +1,5 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
+# Author: Devesh Gurusinghe
 # Purpose: Terraform variable definitions for customizable infrastructure parameters
 # Date: 2026-04-30
 
@@ -10,7 +10,7 @@
 variable "project_id" {
   type        = string
   description = "GCP project ID for FIT5225 CloudEco resources."
-  default     = "fit5225-marine-a1-"
+  default     = "YOUR_GCP_PROJECT_ID"
 }
 
 // Regional home for subnet and static IPs; VMs still need an explicit zone (below).

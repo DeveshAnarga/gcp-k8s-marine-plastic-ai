@@ -1,5 +1,5 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
+# Author: Devesh Gurusinghe
 # Purpose: Terraform outputs for cluster IPs and SSH access commands
 # Date: 2026-04-30
 

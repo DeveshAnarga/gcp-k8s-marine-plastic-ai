@@ -1,6 +1,6 @@
 """
 CloudEco: Marine Plastic Detection System
-Author: Devesh Gurusinghe ()
+Author: Devesh Gurusinghe
 Purpose: Pydantic data models for API request/response validation
 Date: 2026-04-30
 """

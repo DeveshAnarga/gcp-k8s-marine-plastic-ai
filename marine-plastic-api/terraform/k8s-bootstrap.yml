@@ -1,5 +1,5 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
+# Author: Devesh Gurusinghe
 # Purpose: Ansible playbook for Kubernetes cluster initialization and node configuration
 # Date: 2026-04-30
 #

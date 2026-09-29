@@ -1,5 +1,5 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
+# Author: Devesh Gurusinghe
 # Purpose: Firewall rules for K8s API, kubelet, application, and internal traffic
 # Date: 2026-04-30
 

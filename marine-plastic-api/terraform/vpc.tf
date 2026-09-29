@@ -1,5 +1,5 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
+# Author: Devesh Gurusinghe
 # Purpose: VPC network and subnet configuration for Kubernetes cluster
 # Date: 2026-04-30
 

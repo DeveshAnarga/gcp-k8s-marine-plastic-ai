@@ -1,5 +1,5 @@
 # CloudEco: Marine Plastic Detection System
-# Author: Devesh Gurusinghe ()
+# Author: Devesh Gurusinghe
 # Purpose: Kubernetes deployment configuration with resource limits, probes, scaling
 # Date: 2026-04-30
 

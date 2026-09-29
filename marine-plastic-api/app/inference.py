@@ -1,6 +1,6 @@
 """
 CloudEco: Marine Plastic Detection System
-Author: Devesh Gurusinghe ()
+Author: Devesh Gurusinghe
 Purpose: YOLO model inference engine with ThreadPoolExecutor for async CPU-bound operations
 Date: 2026-04-30
 """
